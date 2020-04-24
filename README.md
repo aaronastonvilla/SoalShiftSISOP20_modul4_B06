@@ -37,4 +37,8 @@ Misalkan ada file bernama “kelincilucu.jpg” dalam directory FOTO_PENTING, da
 Note : Dalam penamaan file ‘/’ diabaikan, dan ekstensi tidak perlu di encrypt.
 Metode enkripsi pada suatu direktori juga berlaku kedalam direktori lainnya yang ada didalamnya.
 
-_**Penyelesaian**_\
+_**Penyelesaian**_
+Kami membuat fungsi encrypt dan decrypt encv1_ di bagian lain, tetapi saat dicoba tidak bisa.
+
+**Permasalahan**
+Kami tidak mampu menyelesaikan lagi mas mbak.
