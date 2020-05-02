@@ -10,7 +10,8 @@
 #include <sys/time.h>
 #include <wait.h>
 
-static const char *dirpath = "/home/bonisaz/Documents";
+
+static const char *dirpath = "/home/bonizas/Documents";
 char* key = "9(ku@AW1[Lmvgax6q`5Y2Ry?+sF!^HKQiBXCUSe&0M.b%rI'7d)o4~VfZ*{#:}ETt$3J-zpc]lnh8,GwP_ND|jO";
 char encv1[10] = "encv1_";
 
@@ -25,7 +26,7 @@ int dot(char* path){
 		if(path[i] == '.'){
 			return i;
 		}
-	}
+	} 
 
 	return panjang;
 }
@@ -88,12 +89,37 @@ void cipher(char *path, char a){
 	}
 }
 
+void loginfo (char* text, char* path){
+	char* info = "INFO";
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char log[1000];
+	sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+		FILE *out = fopen("/home/bonizas/fs.log", "a");
+	fprintf(out, "%s\n", log);
+	fclose(out);
+	return 0;
+}
+
+void logwarning (char* text, char* path){
+	char* info = "WARNING";
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char log[1000];
+	sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+		FILE *out = fopen("/home/bonizas/fs.log", "a");
+	fprintf(out, "%s\n", log);
+	fclose(out);
+	return 0;
+}
+
 // Akses atribut dari file atau folder
 // Setiap kali mengakses sebuah file atau folder,
 // diperlukan atribut bahwa file atau folder tersebut
 // benar-benar ada. maka dari itu digunakan lstat
 static int xmp_getattr(const char *path, struct stat *stbuf){
-    int res;
+    loginfo("LS", path);
+	int res;
     char fpath[1000];
     
     // debug getattr
@@ -109,7 +135,7 @@ static int xmp_getattr(const char *path, struct stat *stbuf){
 	}else{
 		sprintf(fpath, "%s%s", dirpath, path);
 	}
-
+	
     res = lstat(fpath, stbuf);
     
     if (res == -1)
@@ -118,10 +144,27 @@ static int xmp_getattr(const char *path, struct stat *stbuf){
     return 0;
 }
 
+// static int xmp_chmod(const *path, mode_t mode){
+// 	loginfo("SETPERMISSION", path);
+// 	int res;
+// 	res = chmod(path, mode);
+// 	if (res == -1) return -errno;
+// 	return 0;
+// }
+
+// static int xmp_chown(const *path, uid_t uid, gid_t gid){
+// 	loginfo("SETOWNER", path);
+// 	int res;
+// 	res = lchown(path, uid, gid);
+// 	if (res == -1) return -errno;
+// 	return 0;
+// }
+
 // Akses folder
 static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
                         off_t offset, struct fuse_file_info *fi){
-    char fpath[1000];
+    loginfo("CD", path);
+	char fpath[1000];
 
     // debug readdir
     // printf("readdir: %s\n", path);
@@ -136,7 +179,7 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     }else{
         sprintf(fpath, "%s%s",dirpath, path);
     }
-
+	
     int res = 0;
     DIR *dp;
     struct dirent *de;
@@ -172,7 +215,8 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi){
-    char fpath[1000];
+    loginfo("CAT", path);
+	char fpath[1000];
 
     // debug read
     // printf("read: %s\n", path);
@@ -188,7 +232,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	}else{
 		sprintf(fpath, "%s%s", dirpath, path);
 	}
-
+	
     int res = 0;
     int fd = 0 ;
 
@@ -210,6 +254,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 
 static int xmp_mkdir(const char *path, mode_t mode)
 {
+	loginfo ("MKDIR", path);
 	int res;
 	char fpath[1000];
 
@@ -237,6 +282,7 @@ static int xmp_mkdir(const char *path, mode_t mode)
 
 static int xmp_rmdir(const char *path)
 {
+	logwarning ("RMDIR", path);
 	int res;
 	char fpath[1000];
 
@@ -264,6 +310,7 @@ static int xmp_rmdir(const char *path)
 
 static int xmp_rename(const char *from, const char *to)
 {
+	loginfo ("RENAME", from);
 	char src[1000], dst[1000];
 	char temp[1000];
 
@@ -313,6 +360,7 @@ static int xmp_rename(const char *from, const char *to)
 
 static int xmp_truncate(const char *path, off_t size)
 {
+	loginfo ("TRUNCATE", path);
 	int res;
 	char fpath[1000];
 
@@ -339,6 +387,7 @@ static int xmp_truncate(const char *path, off_t size)
 static int xmp_write(const char *path, const char *buf, size_t size,
 					 off_t offset, struct fuse_file_info *fi)
 {
+	loginfo("WRITE", path);
 	int fd;
 	int res;
 	char fpath[1000];
@@ -373,6 +422,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 
 static int xmp_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
+	loginfo("CREAT", path);
 	(void)fi;
 
 	int res;
@@ -402,6 +452,7 @@ static int xmp_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 
 static int xmp_utimens(const char *path, const struct timespec ts[2])
 {
+	loginfo("SETACCESS", path);
 	int res;
 	char fpath[1000];
 
@@ -434,6 +485,7 @@ static int xmp_utimens(const char *path, const struct timespec ts[2])
 
 static int xmp_access(const char *path, int mask)
 {
+	loginfo ("ACCESS", path);
 	int res;
 	char fpath[1000];
 
@@ -460,6 +512,7 @@ static int xmp_access(const char *path, int mask)
 
 static int xmp_open(const char *path, struct fuse_file_info *fi)
 {
+	loginfo ("OPEN", path);
 	int res;
 	char fpath[1000];
 
@@ -485,6 +538,7 @@ static int xmp_open(const char *path, struct fuse_file_info *fi)
 }
 
 static int xmp_mknod(const char *path, mode_t mode, dev_t rdev) {
+	loginfo("MKNOD", path);
 	int res;
 	char fpath[1000];
 
@@ -521,6 +575,7 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev) {
 }
 
 static int xmp_unlink(const char *path){
+	logwarning("WARNING", path);
     int res;
     char fpath[1000];
 
