@@ -42,3 +42,52 @@ Kami membuat fungsi encrypt dan decrypt encv1_ di bagian lain, tetapi saat dicob
 
 **Permasalahan**
 Kami tidak mampu menyelesaikan lagi mas mbak.
+
+#### Detail 4
+_**Penjelasan:**\
+a. Sebuah berkas nantinya akan terbentuk bernama "fs.log" di direktori *home* pengguna (/home/[user]/fs.log) yang berguna menyimpan daftar perintah system call yang telah dijalankan.
+b. Agar nantinya pencatatan lebih rapi dan terstruktur, log akan dibagi menjadi beberapa level yaitu INFO dan WARNING.
+c. Untuk log level WARNING, merupakan pencatatan log untuk syscall rmdir dan unlink.
+d. Sisanya, akan dicatat dengan level INFO.
+e. Format untuk logging yaitu:
+```
+[LEVEL]::[yy][mm][dd]-[HH]:[MM]:[SS]::[CMD]::[DESC ...]
+```
+di mana
+LEVEL    : Level logging
+yy   	 : Tahun dua digit
+mm    	 : Bulan dua digit
+dd    	 : Hari dua digit
+HH    	 : Jam dua digit
+MM    	 : Menit dua digit
+SS    	 : Detik dua digit
+CMD     	 : System call yang terpanggil
+DESC      : Deskripsi tambahan (bisa lebih dari satu, dipisahkan dengan ::)
+
+_**Penyelesaian**_\
+```
+void loginfo (char* text, char* path){
+	char* info = "INFO";
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char log[1000];
+	sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+		FILE *out = fopen("/home/bonizas/fs.log", "a");
+	fprintf(out, "%s\n", log);
+	fclose(out);
+	return 0;
+}
+
+void logwarning (char* text, char* path){
+	char* info = "WARNING";
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char log[1000];
+	sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+		FILE *out = fopen("/home/bonizas/fs.log", "a");
+	fprintf(out, "%s\n", log);
+	fclose(out);
+	return 0;
+}
+```
+Kami membuat 2 fungsi, yang pertama `loginfo` yang berfungsi untuk mencatat info berupa log yang dicatat ke `fs.log`. Lalu yang kedua adalah `logwarning` yang dicatat jika berupa warning dan tetap ke `fs.log`. Lalu kedua fungsi tadi dipanggil di setiap operasi yang digunakan.
